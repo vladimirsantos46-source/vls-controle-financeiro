@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101827">
+  <title>VLS | Controle Financeiro</title>
+  <style>
+    :root{color-scheme:dark;--bg:#0b1220;--panel:#121d2e;--panel2:#18263a;--line:#26364d;--text:#edf3fb;--muted:#9aabc1;--accent:#65d6a4;--red:#ff7777;--yellow:#f3c969}
+    *{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#0b1220,#101b2c);color:var(--text);font:15px/1.5 Inter,system-ui,Segoe UI,Arial,sans-serif;min-height:100vh}
+    button,input,select,textarea{font:inherit}button{cursor:pointer;border:0;border-radius:10px;padding:11px 15px;background:var(--accent);color:#092116;font-weight:700}button.secondary{background:var(--panel2);color:var(--text);border:1px solid var(--line)}button.danger{background:#48252c;color:#ffd9dc}
+    input,select,textarea{width:100%;background:#0c1625;border:1px solid var(--line);border-radius:9px;padding:11px;color:var(--text);outline:none}input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+    .wrap{max-width:1180px;margin:auto;padding:28px 20px 60px}.top{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:26px}.brand{display:flex;align-items:center;gap:12px}.mark{width:42px;height:42px;border-radius:13px;background:var(--accent);color:#082117;display:grid;place-items:center;font-weight:900;font-size:21px}.brand h1{font-size:20px;margin:0}.brand p{margin:0;color:var(--muted);font-size:12px}
+    .card{background:rgba(18,29,46,.94);border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:0 12px 35px #0002}.auth{max-width:430px;margin:7vh auto}.auth h2{margin:0 0 5px}.muted{color:var(--muted)}.field{display:grid;gap:6px;margin:13px 0}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}.hidden{display:none!important}
+    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:18px 0}.metric small{color:var(--muted)}.metric strong{display:block;font-size:24px;margin-top:5px}.sectionhead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:26px 0 12px}.sectionhead h2{font-size:18px;margin:0}.filters{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;margin-bottom:14px}
+    .tablewrap{overflow:auto}table{border-collapse:collapse;width:100%;min-width:720px}th,td{text-align:left;padding:12px 10px;border-bottom:1px solid var(--line)}th{color:var(--muted);font-size:12px;font-weight:600}td small{display:block;color:var(--muted)}.status{display:inline-block;padding:4px 8px;border-radius:20px;background:#27364a;font-size:12px}.status.Pago{color:var(--accent)}.status.Pendente,.status.Parcial{color:var(--yellow)}.status.Não\ pago{color:var(--red)}
+    dialog{border:1px solid var(--line);border-radius:16px;background:var(--panel);color:var(--text);width:min(520px,calc(100% - 24px));padding:22px}dialog::backdrop{background:#000a}.notice{padding:11px 13px;border-radius:10px;background:#1c2b3e;color:var(--muted);margin:12px 0}.error{color:#ff9a9a}.success{color:var(--accent)}
+    @media(max-width:760px){.wrap{padding:18px 13px 40px}.grid{grid-template-columns:repeat(2,1fr)}.top{align-items:flex-start}.filters{grid-template-columns:1fr}.metric strong{font-size:20px}.sectionhead{align-items:flex-start;flex-direction:column}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header class="top">
+      <div class="brand"><div class="mark">V</div><div><h1>VLS Controle Financeiro</h1><p>Organização e acompanhamento mensal</p></div></div>
+      <button id="logout" class="secondary hidden">Sair</button>
+    </header>
+
+    <section id="authView" class="card auth">
+      <h2>Acesse sua conta</h2><p class="muted">Entre para visualizar e gerenciar seus lançamentos financeiros.</p>
+      <form id="authForm">
+        <label class="field">E-mail<input id="email" type="email" autocomplete="username" required></label>
+        <label class="field">Senha<input id="password" type="password" autocomplete="current-password" minlength="6" required></label>
+        <div class="actions"><button type="submit">Entrar</button><button type="button" id="signup" class="secondary">Criar conta</button></div>
+      </form>
+      <p id="authMsg" class="notice" aria-live="polite">Use seu e-mail e senha cadastrados.</p>
+    </section>
+
+    <section id="appView" class="hidden">
+      <div class="sectionhead"><div><h2>Visão geral</h2><div class="muted" id="periodLabel"></div></div><div class="actions"><input id="month" type="month" style="width:auto"><button id="addBtn">+ Novo lançamento</button></div></div>
+      <div class="grid">
+        <article class="card metric"><small>Receitas previstas</small><strong id="income">R$ 0,00</strong></article>
+        <article class="card metric"><small>Despesas previstas</small><strong id="expenses">R$ 0,00</strong></article>
+        <article class="card metric"><small>Total pago</small><strong id="paid">R$ 0,00</strong></article>
+        <article class="card metric"><small>Saldo previsto</small><strong id="balance">R$ 0,00</strong></article>
+      </div>
+      <div class="sectionhead"><h2>Lançamentos do mês</h2></div>
+      <div class="card">
+        <div class="filters"><input id="search" placeholder="Buscar descrição ou categoria"><select id="statusFilter"><option value="">Todos os status</option><option>Pago</option><option>Pendente</option><option>Parcial</option><option>Não pago</option><option>Informar valor</option></select><button class="secondary" id="refresh">Atualizar</button></div>
+        <div class="tablewrap"><table><thead><tr><th>Descrição</th><th>Categoria</th><th>Vencimento</th><th>Valor</th><th>Pago</th><th>Status</th><th></th></tr></thead><tbody id="entries"></tbody></table></div>
+        <p id="empty" class="muted">Nenhum lançamento neste mês.</p>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="entryDialog">
+    <form id="entryForm">
+      <h2 id="dialogTitle">Novo lançamento</h2>
+      <input type="hidden" id="entryId">
+      <label class="field">Tipo<select id="kind"><option value="despesa">Despesa</option><option value="receita">Receita</option></select></label>
+      <label class="field">Descrição<input id="description" required maxlength="140"></label>
+      <label class="field">Categoria<input id="category" required maxlength="80" placeholder="Ex.: Moradia, Alimentação"></label>
+      <label class="field">Vencimento<input id="dueDate" type="date"></label>
+      <label class="field">Valor total (R$)<input id="amount" type="number" min="0" step="0.01" value="0" required></label>
+      <label class="field">Valor pago (R$)<input id="paidAmount" type="number" min="0" step="0.01" value="0" required></label>
+      <label class="field">Status<select id="entryStatus"><option>Pendente</option><option>Pago</option><option>Parcial</option><option>Não pago</option><option>Informar valor</option></select></label>
+      <label class="field">Observações<textarea id="notes" rows="2"></textarea></label>
+      <div class="actions"><button type="submit">Salvar</button><button type="button" class="secondary" id="cancelDialog">Cancelar</button></div>
+      <p id="entryMsg" class="error" aria-live="polite"></p>
+    </form>
+  </dialog>
+
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.80.0';
+    const SUPABASE_URL = 'https://yuncifqzzehgotrhebnq.supabase.co';
+    const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_u6ULAPiYNth_YQmVuoGlXQ__L7PkjrV';
+    const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+    const $ = id => document.getElementById(id);
+    const money = n => new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(n)||0);
+    let currentUser = null, rows = [];
+    const today = new Date();
+    $('month').value = today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0');
+
+    function showAuth(){ $('authView').classList.remove('hidden'); $('appView').classList.add('hidden'); $('logout').classList.add('hidden'); }
+    function showApp(){ $('authView').classList.add('hidden'); $('appView').classList.remove('hidden'); $('logout').classList.remove('hidden'); }
+    function monthRange(){ const [y,m]=$('month').value.split('-').map(Number); return {start:y+'-'+String(m).padStart(2,'0')+'-01',end:new Date(y,m,0).toISOString().slice(0,10)}; }
+    async function loadEntries(){
+      if(!currentUser)return;
+      const {start,end}=monthRange(); $('periodLabel').textContent = new Date(start+'T12:00:00').toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+      const {data,error}=await supabase.from('finance_entries').select('*').eq('user_id',currentUser.id).gte('competence',start).lte('competence',end).order('due_date',{ascending:true});
+      if(error){$('empty').textContent='Não foi possível carregar os lançamentos: '+error.message;return;}
+      rows=data||[]; render();
+    }
+    function render(){
+      const filtered=rows.filter(r=>(!$('search').value||((r.description+' '+r.category).toLowerCase().includes($('search').value.toLowerCase())))&&(!$('statusFilter').value||r.status===$('statusFilter').value));
+      const expenses=rows.filter(r=>r.kind==='despesa').reduce((s,r)=>s+Number(r.amount),0);
+      const income=rows.filter(r=>r.kind==='receita').reduce((s,r)=>s+Number(r.amount),0);
+      const paid=rows.reduce((s,r)=>s+Number(r.paid_amount),0);
+      $('income').textContent=money(income);$('expenses').textContent=money(expenses);$('paid').textContent=money(paid);$('balance').textContent=money(income-expenses);
+      $('entries').innerHTML=filtered.map(r=>'<tr><td>'+escapeHtml(r.description)+'</td><td>'+escapeHtml(r.category)+'</td><td>'+(r.due_date?new Date(r.due_date+'T12:00:00').toLocaleDateString('pt-BR'):'—')+'</td><td>'+money(r.amount)+'</td><td>'+money(r.paid_amount)+'</td><td><span class="status">'+escapeHtml(r.status)+'</span></td><td><button class="secondary" data-edit="'+r.id+'">Editar</button></td></tr>').join('');
+      $('empty').classList.toggle('hidden',filtered.length>0);
+      document.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click',()=>editEntry(b.dataset.edit)));
+    }
+    function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+    function openNew(){ $('entryForm').reset();$('entryId').value='';$('dialogTitle').textContent='Novo lançamento';$('entryMsg').textContent='';$('amount').value='0';$('paidAmount').value='0';$('entryDialog').showModal(); }
+    function editEntry(id){const r=rows.find(x=>x.id===id);if(!r)return;$('entryId').value=r.id;$('dialogTitle').textContent='Editar lançamento';for(const [field,key] of [['kind','kind'],['description','description'],['category','category'],['dueDate','due_date'],['amount','amount'],['paidAmount','paid_amount'],['entryStatus','status'],['notes','notes']])$(field).value=r[key]??'';$('entryMsg').textContent='';$('entryDialog').showModal();}
+    $('authForm').addEventListener('submit',async e=>{e.preventDefault();$('authMsg').textContent='Conectando...';const {error}=await supabase.auth.signInWithPassword({email:$('email').value,password:$('password').value});$('authMsg').textContent=error?error.message:'Acesso autorizado.';});
+    $('signup').addEventListener('click',async()=>{ $('authMsg').textContent='Criando conta...';const {data,error}=await supabase.auth.signUp({email:$('email').value,password:$('password').value});$('authMsg').textContent=error?error.message:(data.session?'Conta criada.':'Conta criada. Verifique seu e-mail para confirmar o cadastro.');});
+    $('logout').addEventListener('click',async()=>{await supabase.auth.signOut();currentUser=null;showAuth();});
+    supabase.auth.onAuthStateChange((_event,session)=>{currentUser=session?.user||null;if(currentUser){showApp();loadEntries();}else showAuth();});
+    $('addBtn').addEventListener('click',openNew);$('cancelDialog').addEventListener('click',()=>$('entryDialog').close());$('refresh').addEventListener('click',loadEntries);$('month').addEventListener('change',loadEntries);$('search').addEventListener('input',render);$('statusFilter').addEventListener('change',render);
+    $('entryForm').addEventListener('submit',async e=>{e.preventDefault();$('entryMsg').textContent='';const amount=Number($('amount').value),paid=Number($('paidAmount').value);if(paid>amount){$('entryMsg').textContent='O valor pago não pode superar o valor total.';return;}
+      const competence=$('month').value+'-01';const payload={user_id:currentUser.id,competence,kind:$('kind').value,description:$('description').value.trim(),category:$('category').value.trim(),due_date:$('dueDate').value||null,amount,paid_amount:paid,status:$('entryStatus').value,notes:$('notes').value.trim()||null};
+      const id=$('entryId').value;const result=id?await supabase.from('finance_entries').update(payload).eq('id',id).eq('user_id',currentUser.id):await supabase.from('finance_entries').insert(payload);
+      if(result.error){$('entryMsg').textContent=result.error.message;return;}$('entryDialog').close();await loadEntries();
+    });
+    const {data:{session}}=await supabase.auth.getSession();currentUser=session?.user||null;if(currentUser){showApp();await loadEntries();}
+  </script>
+</body>
+</html>
