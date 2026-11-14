@@ -26,13 +26,13 @@
     </header>
 
     <section id="authView" class="card auth">
-      <h2>Acesse sua conta</h2><p class="muted">Entre para visualizar e gerenciar seus lançamentos financeiros.</p>
+      <h2>Acesse sua conta</h2><p class="muted">Acesso exclusivo. Entre com o e-mail e a senha autorizados.</p>
       <form id="authForm">
         <label class="field">E-mail<input id="email" type="email" autocomplete="username" required></label>
         <label class="field">Senha<input id="password" type="password" autocomplete="current-password" minlength="6" required></label>
-        <div class="actions"><button type="submit">Entrar</button><button type="button" id="signup" class="secondary">Criar conta</button></div>
+        <div class="actions"><button type="submit">Entrar</button></div>
       </form>
-      <p id="authMsg" class="notice" aria-live="polite">Use seu e-mail e senha cadastrados.</p>
+      <p id="authMsg" class="notice" aria-live="polite">Acesso restrito a uma única conta autorizada.</p>
     </section>
 
     <section id="appView" class="hidden">
@@ -104,7 +104,6 @@
     function openNew(){ $('entryForm').reset();$('entryId').value='';$('dialogTitle').textContent='Novo lançamento';$('entryMsg').textContent='';$('amount').value='0';$('paidAmount').value='0';$('entryDialog').showModal(); }
     function editEntry(id){const r=rows.find(x=>x.id===id);if(!r)return;$('entryId').value=r.id;$('dialogTitle').textContent='Editar lançamento';for(const [field,key] of [['kind','kind'],['description','description'],['category','category'],['dueDate','due_date'],['amount','amount'],['paidAmount','paid_amount'],['entryStatus','status'],['notes','notes']])$(field).value=r[key]??'';$('entryMsg').textContent='';$('entryDialog').showModal();}
     $('authForm').addEventListener('submit',async e=>{e.preventDefault();$('authMsg').textContent='Conectando...';const {error}=await supabase.auth.signInWithPassword({email:$('email').value,password:$('password').value});$('authMsg').textContent=error?error.message:'Acesso autorizado.';});
-    $('signup').addEventListener('click',async()=>{ $('authMsg').textContent='Criando conta...';const {data,error}=await supabase.auth.signUp({email:$('email').value,password:$('password').value});$('authMsg').textContent=error?error.message:(data.session?'Conta criada.':'Conta criada. Verifique seu e-mail para confirmar o cadastro.');});
     $('logout').addEventListener('click',async()=>{await supabase.auth.signOut();currentUser=null;showAuth();});
     supabase.auth.onAuthStateChange((_event,session)=>{currentUser=session?.user||null;if(currentUser){showApp();loadEntries();}else showAuth();});
     $('addBtn').addEventListener('click',openNew);$('cancelDialog').addEventListener('click',()=>$('entryDialog').close());$('refresh').addEventListener('click',loadEntries);$('month').addEventListener('change',loadEntries);$('search').addEventListener('input',render);$('statusFilter').addEventListener('change',render);
